@@ -1,0 +1,29 @@
+.git
+.gitignore
+.idea
+.vscode
+
+# Python local state
+__pycache__
+*.pyc
+.venv
+venv
+.pytest_cache
+.coverage
+
+# Node local state
+node_modules
+frontend/dist
+frontend/.vite
+npm-debug.log
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Documentation and generated artifacts
+presentation
+coverage
+htmlcov
+test-results
