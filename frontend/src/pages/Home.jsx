@@ -1,27 +1,32 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { checkApiHealth } from "../api/productApi";
-
+import { healthCheck } from "../services/api";
 
 function Home() {
   const [apiStatus, setApiStatus] = useState("checking");
 
   useEffect(() => {
-    checkApiHealth()
-      .then((response) => setApiStatus(response.data.status))
+    healthCheck()
+      .then((response) => {
+        if (response.data && response.data.status === "ok") {
+          setApiStatus("online");
+        } else {
+          setApiStatus("offline");
+        }
+      })
       .catch(() => setApiStatus("offline"));
   }, []);
 
   return (
     <section className="page-section">
       <div className="hero-layout">
-        <div>
+        <div className="hero-text-content">
           <p className="eyebrow">Review Intelligence Platform</p>
           <h1>Analyze product reviews with sentiment-driven dashboards.</h1>
           <p className="hero-copy">
-            Search a product, collect review data, classify customer sentiment,
-            and convert feedback into clear dashboard insights.
+            Search any product across Amazon or Flipkart, automatically scrape customer reviews, 
+            classify sentiment polarity, and view aggregated metrics inside our comprehensive visual dashboard.
           </p>
           <div className="action-row">
             <Link className="primary-button" to="/search">
@@ -33,11 +38,13 @@ function Home() {
           </div>
         </div>
         <aside className="status-panel">
-          <span>Backend API</span>
-          <strong className={`status-pill status-${apiStatus}`}>{apiStatus}</strong>
-          <p>
-            The health check uses the Flask endpoint and helps verify local
-            development setup.
+          <h3>System Integration</h3>
+          <div className="status-indicator-row">
+            <span>Backend API Status:</span>
+            <strong className={`status-pill status-${apiStatus}`}>{apiStatus}</strong>
+          </div>
+          <p className="status-description">
+            This health check communicates with the Flask backend. When offline, mock fallback data is automatically utilized.
           </p>
         </aside>
       </div>
