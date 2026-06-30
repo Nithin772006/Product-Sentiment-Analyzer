@@ -1,74 +1,129 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-import { searchProduct } from "../api/productApi";
-
-
-const initialForm = {
-  productName: "",
-  platform: "amazon",
-};
-
+import { searchProduct, getProducts, getReviews } from "../services/api";
+import SearchBar from "../components/SearchBar";
+import ProductCard from "../components/ProductCard";
+import ReviewCard from "../components/ReviewCard";
+import LoadingSpinner from "../components/LoadingSpinner";
+import ErrorMessage from "../components/ErrorMessage";
 
 function Search() {
-  const [form, setForm] = useState(initialForm);
-  const [result, setResult] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [searchResult, setSearchResult] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setForm((current) => ({ ...current, [name]: value }));
+  // Load available products on component mount
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await getProducts();
+      setProducts(response.data || []);
+    } catch (err) {
+      setError("Failed to load products. Please check the backend connection.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-
+  const handleSearch = async (query) => {
+    setIsLoading(true);
+    setError(null);
+    setSearchResult(null);
     try {
-      const response = await searchProduct(form);
-      setResult(response.data);
-    } catch {
-      setResult({ message: "Unable to reach backend API." });
+      const payload = { productName: query, platform: "amazon" };
+      const response = await searchProduct(payload);
+      setSearchResult(response.data);
+      // Automatically select the first mock product for user visualization if matching
+      if (products.length > 0) {
+        handleProductClick(products[0]);
+      }
+    } catch (err) {
+      setError("Could not submit search request. Backend API may be offline.");
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
+    }
+  };
+
+  const handleProductClick = async (product) => {
+    setSelectedProduct(product);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await getReviews();
+      // Filter reviews to match selected product just for visual mockup consistency
+      setReviews(response.data?.reviews || []);
+    } catch (err) {
+      setError("Failed to load reviews for this product.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <section className="page-section compact">
+    <section className="page-section search-page-container">
       <div className="section-heading">
-        <p className="eyebrow">Product Search</p>
-        <h1>Submit a product for review collection.</h1>
+        <p className="eyebrow">Search Engine</p>
+        <h1>Find Products & Analyze Reviews</h1>
+        <p className="section-description">
+          Enter a product name to initiate automatic scraping and sentiment classification, or select a pre-scraped product below.
+        </p>
       </div>
 
-      <form className="search-form" onSubmit={handleSubmit}>
-        <label>
-          Product name
-          <input
-            name="productName"
-            type="text"
-            value={form.productName}
-            onChange={handleChange}
-            placeholder="Example: wireless headphones"
-            required
-          />
-        </label>
+      <SearchBar onSearch={handleSearch} />
 
-        <label>
-          Platform
-          <select name="platform" value={form.platform} onChange={handleChange}>
-            <option value="amazon">Amazon</option>
-            <option value="flipkart">Flipkart</option>
-          </select>
-        </label>
+      {isLoading && <LoadingSpinner />}
 
-        <button className="primary-button" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : "Submit Search"}
-        </button>
-      </form>
+      {error && <ErrorMessage message={error} onRetry={fetchProducts} />}
 
-      {result ? (
-        <pre className="response-box">{JSON.stringify(result, null, 2)}</pre>
-      ) : null}
+      {searchResult && (
+        <div className="search-result-alert success-alert">
+          <h4>Search Job Dispatched</h4>
+          <p>{searchResult.message}</p>
+          <div className="alert-details">
+            <span><strong>Job ID:</strong> {searchResult.job?.id}</span>
+            <span><strong>Status:</strong> {searchResult.job?.status}</span>
+          </div>
+        </div>
+      )}
+
+      <div className="search-content-layout">
+        <div className="products-column">
+          <h2>Available Products</h2>
+          {products.length === 0 && !isLoading && <p className="no-data-msg">No products found.</p>}
+          <div className="products-list-grid">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onClick={() => handleProductClick(product)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {selectedProduct && (
+          <div className="reviews-column">
+            <h2>Reviews for {selectedProduct.name}</h2>
+            {reviews.length === 0 ? (
+              <p className="no-data-msg">No reviews available for this product.</p>
+            ) : (
+              <div className="reviews-list">
+                {reviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </section>
   );
 }

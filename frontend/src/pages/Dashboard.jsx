@@ -1,93 +1,133 @@
-import { useEffect, useState } from "react";
-import { Bar, Doughnut } from "react-chartjs-2";
-import {
-  BarElement,
-  CategoryScale,
-  Chart as ChartJS,
-  ArcElement,
-  Legend,
-  LinearScale,
-  Tooltip,
-} from "chart.js";
+import React, { useEffect, useState } from "react";
 
-import { getDashboard } from "../api/productApi";
-import StatCard from "../components/StatCard.jsx";
-
-
-ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Legend, Tooltip);
-
+import { getDashboard, getProducts } from "../services/api";
+import StatisticsCard from "../components/StatisticsCard.jsx";
+import SentimentChart from "../components/SentimentChart.jsx";
+import RatingChart from "../components/RatingChart.jsx";
+import LoadingSpinner from "../components/LoadingSpinner.jsx";
+import ErrorMessage from "../components/ErrorMessage.jsx";
 
 function Dashboard() {
   const [dashboard, setDashboard] = useState(null);
+  const [productsCount, setProductsCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchDashboardData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [dashResponse, prodResponse] = await Promise.all([
+        getDashboard(),
+        getProducts(),
+      ]);
+      setDashboard(dashResponse.data);
+      setProductsCount(prodResponse.data?.length || 0);
+    } catch (err) {
+      setError("Failed to connect to the backend dashboard API. Please ensure the Flask app is running.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    getDashboard()
-      .then((response) => setDashboard(response.data))
-      .catch(() => setDashboard(null));
+    fetchDashboardData();
   }, []);
 
-  if (!dashboard) {
+  if (isLoading) {
+    return <LoadingSpinner message="Generating sentiment charts and loading dashboard metrics..." />;
+  }
+
+  if (error) {
     return (
       <section className="page-section compact">
-        <p className="loading-state">Loading dashboard data...</p>
+        <ErrorMessage message={error} onRetry={fetchDashboardData} />
       </section>
     );
   }
 
-  const sentimentChart = {
-    labels: ["Positive", "Neutral", "Negative"],
-    datasets: [
-      {
-        data: [
-          dashboard.sentimentDistribution.positive,
-          dashboard.sentimentDistribution.neutral,
-          dashboard.sentimentDistribution.negative,
-        ],
-        backgroundColor: ["#1f9d55", "#f2b705", "#d64545"],
-      },
-    ],
-  };
+  if (!dashboard) {
+    return (
+      <section className="page-section compact">
+        <p className="loading-state">No dashboard data found.</p>
+      </section>
+    );
+  }
 
-  const ratingChart = {
-    labels: Object.keys(dashboard.ratingDistribution),
-    datasets: [
-      {
-        label: "Reviews",
-        data: Object.values(dashboard.ratingDistribution),
-        backgroundColor: "#315c8c",
-      },
-    ],
-  };
+  const { summary, sentimentDistribution, ratingDistribution, recentKeywords } = dashboard;
 
   return (
-    <section className="page-section compact">
+    <section className="page-section dashboard-page-container">
       <div className="section-heading">
-        <p className="eyebrow">Dashboard</p>
-        <h1>Review sentiment overview.</h1>
+        <p className="eyebrow">Analytics Dashboard</p>
+        <h1>Sentiment & Review Insights</h1>
+        <p className="section-description">
+          A high-level view of customer sentiment ratios, product rating distribution, and keyword frequencies extracted from crawled feedback.
+        </p>
       </div>
 
+      {/* Statistics Cards Grid */}
       <div className="stat-grid">
-        <StatCard label="Total Reviews" value={dashboard.summary.totalReviews} />
-        <StatCard label="Average Rating" value={dashboard.summary.averageRating} />
-        <StatCard label="Positive" value={`${dashboard.summary.positivePercentage}%`} />
-        <StatCard label="Negative" value={`${dashboard.summary.negativePercentage}%`} />
+        <StatisticsCard
+          title="Total Products"
+          value={productsCount}
+          icon="default"
+          helperText="Active scraped items"
+        />
+        <StatisticsCard
+          title="Total Reviews"
+          value={summary.totalReviews}
+          icon="reviews"
+          helperText="Scraped from portals"
+        />
+        <StatisticsCard
+          title="Average Rating"
+          value={`${summary.averageRating} / 5`}
+          icon="rating"
+          helperText="Aggregated customer score"
+        />
+        <StatisticsCard
+          title="Positive Reviews"
+          value={`${sentimentDistribution.positive} (${summary.positivePercentage}%)`}
+          icon="positive"
+          helperText="Optimistic feedback"
+        />
+        <StatisticsCard
+          title="Neutral Reviews"
+          value={`${sentimentDistribution.neutral} (${summary.neutralPercentage}%)`}
+          icon="neutral"
+          helperText="Indifferent feedback"
+        />
+        <StatisticsCard
+          title="Negative Reviews"
+          value={`${sentimentDistribution.negative} (${summary.negativePercentage}%)`}
+          icon="negative"
+          helperText="Critical complaints"
+        />
       </div>
 
+      {/* Chart Visualization Grid */}
       <div className="chart-grid">
         <article className="chart-panel">
           <h2>Sentiment Distribution</h2>
-          <Doughnut data={sentimentChart} />
+          <SentimentChart sentimentDistribution={sentimentDistribution} />
         </article>
         <article className="chart-panel">
           <h2>Rating Distribution</h2>
-          <Bar data={ratingChart} />
+          <RatingChart ratingDistribution={ratingDistribution} />
         </article>
       </div>
 
-      <div className="keyword-row">
-        {dashboard.recentKeywords.map((keyword) => (
-          <span key={keyword}>{keyword}</span>
-        ))}
+      {/* Keywords Cloud */}
+      <div className="keywords-cloud-panel">
+        <h2>Frequently Discussed Topics</h2>
+        <div className="keyword-row">
+          {recentKeywords.map((keyword) => (
+            <span key={keyword} className="keyword-chip">
+              #{keyword}
+            </span>
+          ))}
+        </div>
       </div>
     </section>
   );
