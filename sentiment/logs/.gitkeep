@@ -1,0 +1,3 @@
+# This directory is kept under version control so that
+# log files have a place to land.  Log files themselves are
+# excluded via .gitignore.

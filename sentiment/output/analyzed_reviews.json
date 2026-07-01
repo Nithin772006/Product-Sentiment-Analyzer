@@ -1,0 +1,80 @@
+[
+  {
+    "review_id": "R101",
+    "product_id": "P101",
+    "review_text": "The product quality is amazing and delivery was very fast. Absolutely love it!",
+    "sentiment": "Positive",
+    "confidence_score": 0.861,
+    "scores": {
+      "positive": 0.438,
+      "neutral": 0.562,
+      "negative": 0.0,
+      "compound": 0.861
+    }
+  },
+  {
+    "review_id": "R102",
+    "product_id": "P101",
+    "review_text": "Terrible experience. The item arrived broken and customer support was unhelpful. Very disappointed.",
+    "sentiment": "Negative",
+    "confidence_score": 0.7841,
+    "scores": {
+      "positive": 0.127,
+      "neutral": 0.423,
+      "negative": 0.451,
+      "compound": -0.7841
+    }
+  },
+  {
+    "review_id": "R103",
+    "product_id": "P102",
+    "review_text": "It's okay, nothing special. Does what it says but nothing more.",
+    "sentiment": "Neutral",
+    "confidence_score": 0.0462,
+    "scores": {
+      "positive": 0.12,
+      "neutral": 0.745,
+      "negative": 0.135,
+      "compound": -0.0462
+    }
+  },
+  {
+    "review_id": "R104",
+    "product_id": "P102",
+    "review_text": "",
+    "sentiment": "Neutral",
+    "confidence_score": 0.0,
+    "scores": {
+      "positive": 0.0,
+      "neutral": 1.0,
+      "negative": 0.0,
+      "compound": 0.0
+    }
+  },
+  {
+    "review_id": "R105",
+    "product_id": "P103",
+    "review_text": "<p>Great <b>build quality</b>!</p> Check https://example.com for specs 😍🔥",
+    "sentiment": "Positive",
+    "confidence_score": 0.6249,
+    "scores": {
+      "positive": 0.451,
+      "neutral": 0.549,
+      "negative": 0.0,
+      "compound": 0.6249
+    }
+  },
+  {
+    "review_id": "R106",
+    "product_id": "P103",
+    "review_text": "Worst product EVER!!! Waste of money... DO NOT BUY this garbage $$$. I'm returning it ASAP.",
+    "sentiment": "Negative",
+    "confidence_score": 0.7845,
+    "scores": {
+      "positive": 0.0,
+      "neutral": 0.653,
+      "negative": 0.347,
+      "compound": -0.7845
+    }
+  }
+]

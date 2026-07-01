@@ -1,0 +1,44 @@
+[
+  {
+    "review_id": "R101",
+    "product_id": "P101",
+    "review_text": "The product quality is amazing and delivery was very fast. Absolutely love it!",
+    "rating": 5,
+    "sentiment": null
+  },
+  {
+    "review_id": "R102",
+    "product_id": "P101",
+    "review_text": "Terrible experience. The item arrived broken and customer support was unhelpful. Very disappointed.",
+    "rating": 1,
+    "sentiment": null
+  },
+  {
+    "review_id": "R103",
+    "product_id": "P102",
+    "review_text": "It's okay, nothing special. Does what it says but nothing more.",
+    "rating": 3,
+    "sentiment": null
+  },
+  {
+    "review_id": "R104",
+    "product_id": "P102",
+    "review_text": "",
+    "rating": 4,
+    "sentiment": null
+  },
+  {
+    "review_id": "R105",
+    "product_id": "P103",
+    "review_text": "<p>Great <b>build quality</b>!</p> Check https://example.com for specs 😍🔥",
+    "rating": 5,
+    "sentiment": null
+  },
+  {
+    "review_id": "R106",
+    "product_id": "P103",
+    "review_text": "Worst product EVER!!! Waste of money... DO NOT BUY this garbage $$$. I'm returning it ASAP.",
+    "rating": 1,
+    "sentiment": null
+  }
+]
